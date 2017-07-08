@@ -302,7 +302,7 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
       geometry.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
 
       var material = new THREE.MeshBasicMaterial( {
-        map: new THREE.ImageUtils.loadTexture( 'img/splash-panorama.jpg' )
+        map: new THREE.ImageUtils.loadTexture( 'img/night-flat.jpg' )
       } );
 
       mesh = new THREE.Mesh( geometry, material );
