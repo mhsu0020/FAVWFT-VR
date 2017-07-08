@@ -498,7 +498,7 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
       // BOX container MATERIAL
     	var cubeMaterialArray = [];
     	// order to add materials: x+,x-,y+,y-,z+,z-
-    	var wallTexture = new THREE.ImageUtils.loadTexture( 'img/dark-space-texture.jpg' );
+    	var wallTexture = new THREE.ImageUtils.loadTexture( 'img/starry-texture.jpg' );
     	// floor: mesh to receive shadows
     	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
     	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
