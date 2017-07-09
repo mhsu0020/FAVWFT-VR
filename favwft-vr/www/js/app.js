@@ -263,7 +263,7 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
     var spotlights = [];
     var lightTargets = [];
     var lightColors = [];
-    var lightAmount = 30;
+    var lightAmount = 10;
 
     //create an array of floor and wall spotlights:
     for (var i=0; i<lightAmount ;i++){
@@ -293,6 +293,13 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
     var emotionSceneMap = {
       "Joy": "img/cloud.jpg",
       "Anger": "img/starry-texture.jpg"
+    }
+
+    var emotionFontColorMap = {
+      "Joy": "rgba(254,174,1,1.0)",
+      "Anger":"rgba(247,8,16,1.0)",
+      "Fear": "rgba(185,186,186,1.0)",
+      "Disgust": "rgba(161,0,161,1.0)"
     }
 
     var tweetPlaneMesh;
@@ -354,7 +361,7 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
     	directionalLight5.position.set( 0, 0, -1 );
     	scene.add( directionalLight5 );
     	// FLOOR
-    	var floorTexture = new THREE.ImageUtils.loadTexture( 'img/checkerboard.jpg' );
+    	var floorTexture = new THREE.ImageUtils.loadTexture( 'img/pavement.jpg' );
     	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
     	floorTexture.repeat.set( 10, 10 );
     	var floorMaterial = new THREE.MeshLambertMaterial( { map: floorTexture, side: THREE.DoubleSide } );
@@ -362,14 +369,14 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
     	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
     	floor.position.y = -0.5;
     	floor.rotation.x = Math.PI / 2;
-      floor.receiveShadow = true;
+    //  floor.receiveShadow = true;
 
     	scene.add(floor);
     	// SKYBOX/FOG
       // BOX container MATERIAL
     	var cubeMaterialArray = [];
     	// order to add materials: x+,x-,y+,y-,z+,z-
-    	var wallTexture = new THREE.ImageUtils.loadTexture( 'img/cloud.jpg' );
+    	var wallTexture = new THREE.ImageUtils.loadTexture( 'img/starry-texture.jpg' );
     	// floor: mesh to receive shadows
     	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
     	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
@@ -753,18 +760,18 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
 
       // PARTY ON
       ball.rotation.y += ballSpeed;
-      for(var i=0;i<lightAmount;i++){
-
-    		if(lightTargets[i].position.x < 200&&lightTargets[i].position.z < 200){
-
-    			lightTargets[i].position.x=lightTargets[i].position.x+(Math.random()*200-100)*lightSpeed;
-    			lightTargets[i].position.z=lightTargets[i].position.z+(Math.random()*200-100)*lightSpeed;
-    		}
-    		else {
-    			lightTargets[i].position.x=Math.random()*500-100;
-    			lightTargets[i].position.z=Math.random()*200-100;
-    		}
-    	}
+      // for(var i=0;i<lightAmount;i++){
+      //
+    	// 	if(lightTargets[i].position.x < 200&&lightTargets[i].position.z < 200){
+      //
+    	// 		lightTargets[i].position.x=lightTargets[i].position.x+(Math.random()*200-100)*lightSpeed;
+    	// 		lightTargets[i].position.z=lightTargets[i].position.z+(Math.random()*200-100)*lightSpeed;
+    	// 	}
+    	// 	else {
+    	// 		lightTargets[i].position.x=Math.random()*500-100;
+    	// 		lightTargets[i].position.z=Math.random()*200-100;
+    	// 	}
+    	// }
 
     	effect.render( scene, camera );
       scene.remove(tweetPlaneMesh);
@@ -797,26 +804,26 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
       scene.add(currentEmotionTextMesh);
       scene.add( tweetPlaneMesh );
 
-
-      // BOX container MATERIAL
-    	var cubeMaterialArray = [];
-      scene.remove(skyBox);
-      var currentWallImage = emotionSceneMap[tweets[0].emotion.tone_name];
-    	// order to add materials: x+,x-,y+,y-,z+,z-
-    	var wallTexture = new THREE.ImageUtils.loadTexture(currentWallImage );
-    	// floor: mesh to receive shadows
-    	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
-    	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
-    	cubeMaterialArray.push(new THREE.MeshBasicMaterial({ map: wallTexture, side: THREE.DoubleSide }));
-
-    	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
-    	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
-    	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
-    	var skyBoxMaterial = new THREE.MeshFaceMaterial(cubeMaterialArray);
-
-    	var skyBoxGeometry = new THREE.CubeGeometry( 1000, 1000, 1000 );
-    	skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
-    	scene.add(skyBox);
+      //
+      // // BOX container MATERIAL
+    	// var cubeMaterialArray = [];
+      // scene.remove(skyBox);
+      // var currentWallImage = emotionSceneMap[tweets[0].emotion.tone_name];
+    	// // order to add materials: x+,x-,y+,y-,z+,z-
+    	// var wallTexture = new THREE.ImageUtils.loadTexture(currentWallImage );
+    	// // floor: mesh to receive shadows
+    	// cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+    	// cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+    	// cubeMaterialArray.push(new THREE.MeshBasicMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+      //
+    	// cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+    	// cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+    	// cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+    	// var skyBoxMaterial = new THREE.MeshFaceMaterial(cubeMaterialArray);
+      //
+    	// var skyBoxGeometry = new THREE.CubeGeometry( 1000, 1000, 1000 );
+    	// skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+    	// scene.add(skyBox);
 
 
       //cssRenderer.render( cssScene, camera );
@@ -833,6 +840,13 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
   }
 
   function getTwitterFeedCanvas(tweets){
+    var emotionFontColorMap = {
+      "Joy": "rgba(254,174,1,1.0)",
+      "Anger":"rgba(247,8,16,1.0)",
+      "Fear": "rgba(185,186,186,1.0)",
+      "Disgust": "rgba(161,0,161,1.0)"
+    }
+
     var startingY = 50;
     // create a canvas element
     var canvas1 = document.createElement('canvas');
@@ -844,7 +858,7 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
       context1.fillText("@mhsu0030:", 0, startingY);
       startingY+=13;
       context1.fillText(tweet.tweet.substring(0, 20)+"...", 0, startingY);
-      context1.fillStyle = "rgba(251,14,251,1)";
+      context1.fillStyle = emotionFontColorMap[tweet.emotion.tone_name];
       context1.fillText(tweet.emotion.tone_name, 200, startingY);
       startingY+=13;
     })
