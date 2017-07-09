@@ -4,7 +4,7 @@ var password = 'atthackathon2016';
 var username2 = 'test2';
 var password2 = 'atthackathon2016';
 var kandyDomain = 'quiztv.gmail.com';
-angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
+angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -19,7 +19,30 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
     }
   });
 })
+.factory('MyData', function($websocket) {
+     // Open a WebSocket connection
+     var dataStream = $websocket('ws://node-red-favwft.mybluemix.net/tweets');
+     var collection = [];
+     var updateCallbacks = [];
 
+     dataStream.onMessage(function(message) {
+       console.log(message.data);
+       collection.push(JSON.parse(message.data));
+       angular.forEach(updateCallbacks, function(callback) {
+            callback(message.data);
+        });
+     });
+     var methods = {
+       collection: collection,
+       registerUpdateCallback:  function(callback) {
+         updateCallbacks.push(callback);
+       },
+       get: function() {
+         dataStream.send(JSON.stringify({ action: 'get' }));
+       }
+     };
+     return methods;
+  })
 .config(function($stateProvider, $urlRouterProvider) {
     $stateProvider
       .state('home', {
@@ -35,7 +58,8 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
     $urlRouterProvider.otherwise('/home');
 })
 
-.controller('VideoCtrl', function($scope, $timeout, $state, $stateParams) {
+.controller('VideoCtrl', function($scope, $timeout, $state, $stateParams, MyData) {
+  $scope.MyData = MyData;
   $scope.currentItemIndex = 0;
   $scope.doubleClicked = false;
   $scope.dj = $stateParams.dj;
@@ -204,14 +228,15 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
 
 //////////////////////////End splash screen
 
-.directive('videoWall', [function() {
+.directive('videoWall', ['MyData', function(myData) {
 
   return {
     restrict: 'E',
     scope: {
-      person: '='
+      person: '=',
     },
     link: function($scope, $element, $attr) {
+      $scope.MyData = myData;
       create($element[0], $scope);
     }
   }
@@ -226,6 +251,8 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
     var video, videoImage, videoImageContext, videoTexture, movieScreen;
     var video2, videoImage2, videoImageContext2, videoTexture2, movieScreen2;
     var video3, videoImage3, videoImageContext3, videoTexture3, movieScreen3;
+
+
 
     // custom global variables
     var ball;
@@ -254,6 +281,16 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
     }
 
     var raycasterPointer;
+
+    var tweets = [{
+      from: "@mhsu0030",
+      tweet: "pierre is awesome!!!!! #favwft",
+      emotion: {
+        tone_name: "Joy"
+      }
+    }];
+
+    var tweetPlaneMesh;
 
     var scene,
          cssScene,
@@ -521,8 +558,6 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
       currentEmotionTextMesh.rotation.y = -270;
       scene.add(currentEmotionTextMesh);
 
-
-
       var tex = THREE.ImageUtils.loadTexture("img/Fire.png");
       var fire = new THREE.Fire( tex );
       var wireframeMat = new THREE.MeshBasicMaterial({
@@ -557,34 +592,25 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
       });
      artistProfileImg.map.needsUpdate = true; //ADDED
 
-    var tweets = [{
-      from: "@mhsu0030",
-      text: "pierre is awesome!!!!! #favwft",
-      emotion: "joy"
-    },
-    {
-      from: "@mhsu0030",
-      text: "pierre is  awesome!!!!! #favwft",
-      emotion: "joy"
-    },
-    {
-      from: "@mhsu0030",
-      text: "pierre is awesome!!!!!",
-      emotion: "joy"
-    }
-  ]
+     $scope.MyData.registerUpdateCallback(function(data){
+       console.log("from callback: "+data);
+       var tweetEmotion = JSON.parse(data);
+       tweets.push(tweetEmotion);
+     })
+
   	// canvas contents will be used for a texture
   	var texture1 = new THREE.Texture(getTwitterFeedCanvas(tweets))
   	texture1.needsUpdate = true;
       var material1 = new THREE.MeshBasicMaterial( {map: texture1, side:THREE.DoubleSide } );
       material1.transparent = true;
-      var mesh1 = new THREE.Mesh(
+      tweetPlaneMesh = new THREE.Mesh(
           new THREE.PlaneGeometry(360, 360),
           material1
         );
-  	mesh1.position.set(-50,180,400);
-    mesh1.rotateY(185);
-    mesh1.rotateX(100);
+  	tweetPlaneMesh.position.set(-50,180,400);
+    tweetPlaneMesh.rotateY(185);
+    tweetPlaneMesh.rotateX(100);
+    scene.add( tweetPlaneMesh );
 
     // plane
     var artistProfilePlane = new THREE.Mesh(new THREE.PlaneBufferGeometry(360, 360, 4, 4),artistProfileImg);
@@ -592,7 +618,6 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
     artistProfilePlane.overdraw = true;
   //  scene.add(artistProfilePlane);
 
-  	scene.add( mesh1 );
 
 
   var tableObjects = [];
@@ -736,6 +761,20 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
     	}
 
     	effect.render( scene, camera );
+      scene.remove(tweetPlaneMesh);
+      // canvas contents will be used for a texture
+      var texture1 = new THREE.Texture(getTwitterFeedCanvas(tweets))
+      texture1.needsUpdate = true;
+        var material1 = new THREE.MeshBasicMaterial( {map: texture1, side:THREE.DoubleSide } );
+        material1.transparent = true;
+        tweetPlaneMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(360, 360),
+            material1
+          );
+      tweetPlaneMesh.position.set(-50,180,400);
+      tweetPlaneMesh.rotateY(185);
+      tweetPlaneMesh.rotateX(100);
+      scene.add( tweetPlaneMesh );
       //cssRenderer.render( cssScene, camera );
 	     ///renderer.render( scene, camera );
     }
@@ -758,11 +797,11 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova'])
     context1.fillStyle = "rgba(58,165,220,1)";
     tweets.forEach(function(tweet){
       context1.fillStyle = "rgba(58,165,220,1)";
-      context1.fillText(tweet.from+":", 0, startingY);
+      context1.fillText("@mhsu0030:", 0, startingY);
       startingY+=13;
-      context1.fillText(tweet.text.substring(0, 20)+"...", 0, startingY);
+      context1.fillText(tweet.tweet.substring(0, 20)+"...", 0, startingY);
       context1.fillStyle = "rgba(251,14,251,1)";
-      context1.fillText(tweet.emotion, 200, startingY);
+      context1.fillText(tweet.emotion.tone_name, 200, startingY);
       startingY+=13;
     })
     return canvas1;
