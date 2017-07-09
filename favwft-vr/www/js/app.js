@@ -290,8 +290,14 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
       }
     }];
 
-    var tweetPlaneMesh;
+    var emotionSceneMap = {
+      "Joy": "img/cloud.jpg",
+      "Anger": "img/starry-texture.jpg"
+    }
 
+    var tweetPlaneMesh;
+    var currentEmotionTextMesh;
+    var skyBox;
     var scene,
          cssScene,
       camera,
@@ -363,7 +369,7 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
       // BOX container MATERIAL
     	var cubeMaterialArray = [];
     	// order to add materials: x+,x-,y+,y-,z+,z-
-    	var wallTexture = new THREE.ImageUtils.loadTexture( 'img/starry-texture.jpg' );
+    	var wallTexture = new THREE.ImageUtils.loadTexture( 'img/cloud.jpg' );
     	// floor: mesh to receive shadows
     	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
     	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
@@ -375,7 +381,7 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
     	var skyBoxMaterial = new THREE.MeshFaceMaterial(cubeMaterialArray);
 
     	var skyBoxGeometry = new THREE.CubeGeometry( 1000, 1000, 1000 );
-    	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+    	skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
     	scene.add(skyBox);
     	scene.fog = new THREE.FogExp2( 0x9999ff, 0 );
 
@@ -548,7 +554,7 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
         size: 40,
         height: 1
       });
-      var currentEmotionTextMesh = new THREE.Mesh(currentEmotionText, new THREE.MeshBasicMaterial({
+      currentEmotionTextMesh = new THREE.Mesh(currentEmotionText, new THREE.MeshBasicMaterial({
         color: 0x800080, opacity: 1
       }))
       currentEmotionTextMesh.position.x = 100;
@@ -595,7 +601,7 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
      $scope.MyData.registerUpdateCallback(function(data){
        console.log("from callback: "+data);
        var tweetEmotion = JSON.parse(data);
-       tweets.push(tweetEmotion);
+       tweets.unshift(tweetEmotion);
      })
 
   	// canvas contents will be used for a texture
@@ -774,7 +780,45 @@ angular.module('FAVWFT-VR', ['ionic', 'ngCordova', 'ngWebSocket'])
       tweetPlaneMesh.position.set(-50,180,400);
       tweetPlaneMesh.rotateY(185);
       tweetPlaneMesh.rotateX(100);
+
+      scene.remove(currentEmotionTextMesh);
+      var currentEmotionText = new THREE.TextGeometry(tweets[0].emotion.tone_name, {
+        size: 40,
+        height: 1
+      });
+      currentEmotionTextMesh = new THREE.Mesh(currentEmotionText, new THREE.MeshBasicMaterial({
+        color: 0x800080, opacity: 1
+      }))
+      currentEmotionTextMesh.position.x = 100;
+      currentEmotionTextMesh.position.y = 310;
+      currentEmotionTextMesh.position.z = 30;
+      currentEmotionTextMesh.rotation.x = -100;
+      currentEmotionTextMesh.rotation.y = -270;
+      scene.add(currentEmotionTextMesh);
       scene.add( tweetPlaneMesh );
+
+
+      // BOX container MATERIAL
+    	var cubeMaterialArray = [];
+      scene.remove(skyBox);
+      var currentWallImage = emotionSceneMap[tweets[0].emotion.tone_name];
+    	// order to add materials: x+,x-,y+,y-,z+,z-
+    	var wallTexture = new THREE.ImageUtils.loadTexture(currentWallImage );
+    	// floor: mesh to receive shadows
+    	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+    	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+    	cubeMaterialArray.push(new THREE.MeshBasicMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+
+    	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+    	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+    	cubeMaterialArray.push(new THREE.MeshLambertMaterial({ map: wallTexture, side: THREE.DoubleSide }));
+    	var skyBoxMaterial = new THREE.MeshFaceMaterial(cubeMaterialArray);
+
+    	var skyBoxGeometry = new THREE.CubeGeometry( 1000, 1000, 1000 );
+    	skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+    	scene.add(skyBox);
+
+
       //cssRenderer.render( cssScene, camera );
 	     ///renderer.render( scene, camera );
     }
